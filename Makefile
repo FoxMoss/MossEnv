@@ -45,6 +45,7 @@ RAYLIB_LIBTYPE        ?= STATIC
 
 # Build mode for project: DEBUG or RELEASE
 BUILD_MODE            ?= RELEASE
+SINGLE_FILE   ?= TRUE
 
 # Use Wayland display server protocol on Linux desktop (by default it uses X11 windowing system)
 # NOTE: This variable is only used for PLATFORM_OS: LINUX
@@ -197,7 +198,9 @@ ifeq ($(BUILD_MODE),DEBUG)
     CFLAGS += -g -D_DEBUG
 else
     ifeq ($(PLATFORM),PLATFORM_WEB)
-        CFLAGS += -s SINGLE_FILE=1
+        ifeq ($(SINGLE_FILE),TRUE)
+            CFLAGS += -s SINGLE_FILE=1
+        endif
         ifeq ($(BUILD_WEB_ASYNCIFY),TRUE)
             CFLAGS += -O3
         else
@@ -377,7 +380,8 @@ endif
 #------------------------------------------------------------------------------------------------
 PROJECT_SOURCE_FILES ?= \
     main.cpp \
-    desktop.cpp 
+    desktop.cpp \
+    app_core.cpp
 
 # Define all object files from source files
 OBJS = $(patsubst %.c, %.o, $(PROJECT_SOURCE_FILES))
