@@ -1,29 +1,40 @@
 
-#if defined(PLATFORM_WEB)
+#include <fstream>
 #include <emscripten/emscripten.h>
-#else
-#include <stdio.h>
-#endif
+#include <emscripten/val.h>
 
-
-class FoxApp
+class MossApp
 {
 private:
-    char* code; 
+    char *code;
+
 public:
-    FoxApp(/* args */);
+    MossApp(/* args */);
     void Attach();
 };
 
-FoxApp::FoxApp(/* args */)
+MossApp::MossApp(/* args */)
 {
-}
-void FoxApp::Attach()
-{
+    std::ifstream file("resources/fart.wasm", std::ios::binary);
+    if (file)
+    {
+        file.seekg(0, file.end);
+        int length = file.tellg();
+        file.seekg(0, file.beg);
 
-#if defined(PLATFORM_WEB)
-    emscripten_run_script("alert('hi')");
-#else
-    printf("This application has minimal functionality outside a web browser");
-#endif
+        this->code = new char[length];
+        file.read(this->code, length);
+    }
 }
+void MossApp::Attach()
+{
+    emscripten::val global = emscripten::val::global("window");
+    global.set("appData", this->code);
+}
+EM_JS(void, loadWasm, (), {
+    WebAssembly.instantiateStreaming(appData, importObject).then((obj) = > {
+        obj.instance.exports.cli();
+        const table = obj.instance.exports.table;
+        console.log(table.get(0)());
+    });
+});
