@@ -1,40 +1,42 @@
 
-#include <fstream>
-#include <emscripten/emscripten.h>
-#include <emscripten/val.h>
-
-class MossApp
-{
-private:
-    char *code;
-
-public:
-    MossApp(/* args */);
-    void Attach();
-};
-
+#include "app_core.h"
 MossApp::MossApp(/* args */)
 {
-    std::ifstream file("resources/fart.wasm", std::ios::binary);
-    if (file)
-    {
-        file.seekg(0, file.end);
-        int length = file.tellg();
-        file.seekg(0, file.beg);
+    unsigned int dataSize = 0;
+    char *path = "resources/fart.menv";
+    this->code = LoadFileData(path, &dataSize);
 
-        this->code = new char[length];
-        file.read(this->code, length);
+    if (this->code != NULL)
+    {
+        TraceLog(LOG_INFO, "FILEIO: [%s] Loaded storage value", path);
+    }
+    else
+    {
+        TraceLog(LOG_INFO, "FILEIO: [%s] Is null", path);
     }
 }
-void MossApp::Attach()
-{
-    emscripten::val global = emscripten::val::global("window");
-    global.set("appData", this->code);
-}
+
+#if defined(PLATFORM_WEB)
 EM_JS(void, loadWasm, (), {
-    WebAssembly.instantiateStreaming(appData, importObject).then((obj) = > {
+    var info = {
+    'env': wasmImports,
+    'wasi_snapshot_preview1': wasmImports,
+  };
+    WebAssembly.instantiateStreaming(fetch(locateFile(appData), { credentials: 'same-origin' }), info).then((obj) => {
         obj.instance.exports.cli();
-        const table = obj.instance.exports.table;
-        console.log(table.get(0)());
     });
 });
+// The locateFile is needed so the program thinks we're doing fetch.
+#endif
+
+void MossApp::Attach()
+{
+
+#if defined(PLATFORM_WEB)
+    emscripten::val global = emscripten::val::global("window");
+    emscripten::val embeddedCode = emscripten::val::u8string((char *)this->code);
+    global.set("appData", embeddedCode);
+    loadWasm();
+
+#endif
+}

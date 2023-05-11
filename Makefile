@@ -198,6 +198,7 @@ ifeq ($(BUILD_MODE),DEBUG)
     CFLAGS += -g -D_DEBUG
 else
     ifeq ($(PLATFORM),PLATFORM_WEB)
+        CFLAGS += --bind
         ifeq ($(SINGLE_FILE),TRUE)
             CFLAGS += -s SINGLE_FILE=1
         endif

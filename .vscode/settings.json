@@ -46,6 +46,14 @@
         "ostream": "cpp",
         "stdexcept": "cpp",
         "typeinfo": "cpp",
-        "__locale": "cpp"
-    }
+        "__locale": "cpp",
+        "__node_handle": "cpp",
+        "__bit_reference": "cpp",
+        "bitset": "cpp",
+        "__memory": "cpp",
+        "locale": "cpp",
+        "optional": "cpp",
+        "ratio": "cpp"
+    },
+    "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools"
 }
